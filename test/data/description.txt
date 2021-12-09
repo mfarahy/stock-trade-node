@@ -1,0 +1,4 @@
+Erase, Create, and Get all trades
+Get trades by user id
+Get trades by stock symbol
+Get trades by user id & stock symbol

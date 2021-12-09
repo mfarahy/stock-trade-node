@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="0.0280" tests="4" failures="4">
+  <testsuite name="Root Suite" timestamp="2020-08-07T12:51:24" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="trades_test " timestamp="2020-08-07T12:51:24" tests="4" file="/Users/Selvatico/Downloads/hard-node-trade 2/test/test0.js" time="0.0280" failures="4">
+    <testcase name="trades_test  Erase, Create, and Get all trades" time="0.0080" classname="Erase, Create, and Get all trades">
+      <failure message="app.address is not a function" type="TypeError"><![CDATA[TypeError: app.address is not a function
+    at serverAddress (node_modules/chai-http/lib/request.js:282:18)
+    at new Test (node_modules/chai-http/lib/request.js:271:53)
+    at Object.obj.<computed> (node_modules/chai-http/lib/request.js:239:14)
+    at /Users/Selvatico/Downloads/hard-node-trade 2/test/test0.js:36:15
+    at tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Object.gotValue (node_modules/bluebird/js/release/reduce.js:166:18)
+    at Object.gotAccum (node_modules/bluebird/js/release/reduce.js:155:25)
+    at Object.tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromiseCtx (node_modules/bluebird/js/release/promise.js:641:10)
+    at _drainQueueStep (node_modules/bluebird/js/release/async.js:97:12)
+    at _drainQueue (node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (node_modules/bluebird/js/release/async.js:102:5)
+    at Immediate.Async.drainQueues [as _onImmediate] (node_modules/bluebird/js/release/async.js:15:14)
+    at processImmediate (internal/timers.js:439:21)]]></failure>
+    </testcase>
+    <testcase name="trades_test  Get trades by user id" time="0.0040" classname="Get trades by user id">
+      <failure message="app.address is not a function" type="TypeError"><![CDATA[TypeError: app.address is not a function
+    at serverAddress (node_modules/chai-http/lib/request.js:282:18)
+    at new Test (node_modules/chai-http/lib/request.js:271:53)
+    at Object.obj.<computed> (node_modules/chai-http/lib/request.js:239:14)
+    at /Users/Selvatico/Downloads/hard-node-trade 2/test/test0.js:36:15
+    at tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Object.gotValue (node_modules/bluebird/js/release/reduce.js:166:18)
+    at Object.gotAccum (node_modules/bluebird/js/release/reduce.js:155:25)
+    at Object.tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromiseCtx (node_modules/bluebird/js/release/promise.js:641:10)
+    at _drainQueueStep (node_modules/bluebird/js/release/async.js:97:12)
+    at _drainQueue (node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (node_modules/bluebird/js/release/async.js:102:5)
+    at Immediate.Async.drainQueues [as _onImmediate] (node_modules/bluebird/js/release/async.js:15:14)
+    at processImmediate (internal/timers.js:439:21)]]></failure>
+    </testcase>
+    <testcase name="trades_test  Get trades by stock symbol" time="0.0080" classname="Get trades by stock symbol">
+      <failure message="app.address is not a function" type="TypeError"><![CDATA[TypeError: app.address is not a function
+    at serverAddress (node_modules/chai-http/lib/request.js:282:18)
+    at new Test (node_modules/chai-http/lib/request.js:271:53)
+    at Object.obj.<computed> (node_modules/chai-http/lib/request.js:239:14)
+    at /Users/Selvatico/Downloads/hard-node-trade 2/test/test0.js:36:15
+    at tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Object.gotValue (node_modules/bluebird/js/release/reduce.js:166:18)
+    at Object.gotAccum (node_modules/bluebird/js/release/reduce.js:155:25)
+    at Object.tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromiseCtx (node_modules/bluebird/js/release/promise.js:641:10)
+    at _drainQueueStep (node_modules/bluebird/js/release/async.js:97:12)
+    at _drainQueue (node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (node_modules/bluebird/js/release/async.js:102:5)
+    at Immediate.Async.drainQueues [as _onImmediate] (node_modules/bluebird/js/release/async.js:15:14)
+    at processImmediate (internal/timers.js:439:21)]]></failure>
+    </testcase>
+    <testcase name="trades_test  Get trades by user id &amp; stock symbol" time="0.0080" classname="Get trades by user id &amp; stock symbol">
+      <failure message="app.address is not a function" type="TypeError"><![CDATA[TypeError: app.address is not a function
+    at serverAddress (node_modules/chai-http/lib/request.js:282:18)
+    at new Test (node_modules/chai-http/lib/request.js:271:53)
+    at Object.obj.<computed> (node_modules/chai-http/lib/request.js:239:14)
+    at /Users/Selvatico/Downloads/hard-node-trade 2/test/test0.js:36:15
+    at tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Object.gotValue (node_modules/bluebird/js/release/reduce.js:166:18)
+    at Object.gotAccum (node_modules/bluebird/js/release/reduce.js:155:25)
+    at Object.tryCatcher (node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (node_modules/bluebird/js/release/promise.js:547:31)
+    at Promise._settlePromise (node_modules/bluebird/js/release/promise.js:604:18)
+    at Promise._settlePromiseCtx (node_modules/bluebird/js/release/promise.js:641:10)
+    at _drainQueueStep (node_modules/bluebird/js/release/async.js:97:12)
+    at _drainQueue (node_modules/bluebird/js/release/async.js:86:9)
+    at Async._drainQueues (node_modules/bluebird/js/release/async.js:102:5)
+    at Immediate.Async.drainQueues [as _onImmediate] (node_modules/bluebird/js/release/async.js:15:14)
+    at processImmediate (internal/timers.js:439:21)]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

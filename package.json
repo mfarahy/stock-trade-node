@@ -1,0 +1,46 @@
+{
+  "name": "stock-dataset-api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "prestart": "npm install",
+    "app": "ts-node src/app.ts",
+    "pretest": "tsc -p .",
+    "start": "node build/app.js",
+    "test": "NO_LOGS=true jest test"
+  },
+  "dependencies": {
+    "body-parser": "1.19.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-http": "^4.3.0",
+    "cookie-parser": "~1.4.5",
+    "debug": "~4.1.1",
+    "express": "~4.17.1",
+    "jade": "~1.11.0",
+    "jsonfile": "^6.0.1",
+    "lodash": "^4.17.19",
+    "moment": "^2.27.0",
+    "morgan": "~1.10.0",
+    "serve-favicon": "~2.5.0",
+    "sqlite3": "^5.0.0",
+    "bluebird": "^3.7.2",
+    "typescript": "3.9.7",
+    "@hapi/boom": "^9.1.0",
+    "ts-node": "^8.10.2",
+    "express-pino-logger": "^5.0.0",
+    "pino": "^6.5.0",
+    "pino-express": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.54",
+    "@types/morgan": "^1.9.1",
+    "@types/express": "^4.17.7",
+    "@types/hapi__boom": "^9.0.1",
+    "@types/jest": "^26.0.7",
+    "jest": "^26.1.0",
+    "jest-extended": "^0.11.5",
+    "jest-junit": "^11.1.0",
+    "ts-jest": "^26.1.4"
+  }
+}
