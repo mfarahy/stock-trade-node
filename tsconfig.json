@@ -17,23 +17,12 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
-    "lib": [
-      "es2018",
-      "DOM"
-    ],
-    "rootDirs": [
-      "src",
-      "src/test"
-    ],
+    "lib": ["es2018", "DOM"],
+    "rootDirs": ["src", "src/test"],
     "outDir": "build",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "baseUrl": "."
   },
-  "exclude": [
-    "node_modules",
-    "build"
-  ],
-  "include": [
-    "src/*.ts",
-    "src/**/*.ts"
-  ]
+  "exclude": ["node_modules", "build"],
+  "include": ["src", "src/*.ts", "src/**/*.ts"]
 }

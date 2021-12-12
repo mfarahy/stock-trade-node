@@ -1,3 +1,3 @@
-const express = require('express');
-export const router = express.Router();
+import { FastifyInstance, RouteShorthandOptions } from 'fastify';
 
+async function route(fastify: FastifyInstance, opts: RouteShorthandOptions) {}

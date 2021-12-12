@@ -1,65 +1,62 @@
-import Boom from '@hapi/boom';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import express from 'express';
-import expressPinoLogger from 'express-pino-logger';
-import path from 'path';
-import pino from 'pino';
-import { indexRouter } from './routes';
+import Path, { join } from 'path';
+import fastifyStatic from 'fastify-static';
+import Cors from 'fastify-cors';
+import Autoload from 'fastify-autoload';
+import Sensible from 'fastify-sensible';
+import Env from 'fastify-env';
+import S from 'fluent-json-schema';
+import { C } from './const';
 
-const logger = pino({});
+export async function App(server, opts) {
+  const configSchema = S.object()
+    .prop(C.MONGODB_CONNECTION_STRING, S.string().required())
+    .prop(C.PORT, S.number().required())
+    .prop(C.HOST, S.string())
+    .prop(C.LOG_LEVEL, S.string().required())
+    .prop(C.NODE_ENV, S.string().enum(['development', 'production']).required());
+  server
+    .register(Env, {
+      dotenv: {
+        path: `${__dirname}/.env`,
+        debug: true,
+      },
+      confKey: 'config',
+      schema: configSchema.valueOf(),
+    })
+    .ready((e) => {
+      if (e) {
+        console.error(e);
+        return;
+      }
 
-const app = express();
-const port = 3002;
+      server.register(App);
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+      const config = server['config'];
+      server.listen(config[C.PORT] ?? 3002, config[C.HOST], () => {
+        console.log('server is starting on {0}', config[C.PORT]);
+      });
+    });
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  server.register(Cors, {
+    origin: false,
+  });
 
+  server.register(fastifyStatic, {
+    root: Path.join(__dirname, 'public'),
+    prefix: '/public/', // optional: default '/'
+  });
 
-app.use('/', indexRouter);
-//app.use('/trades', trades);
-//app.use('/erase', erase);
-//app.use('/stocks', stocks);
+  server.register(Autoload, {
+    dir: join(__dirname, 'plugins'),
+  });
 
-// catch 404 and forward to error handler
-app.use((req, res, next) => {
-    const err = Boom.notFound('Route not found');
-    next(err);
-});
+  console.log(join(__dirname, 'routes'));
 
-// error handler
-app.use((err, req, res, next) => {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+  server.register(Autoload, {
+    dir: join(__dirname, 'routes'),
+    dirNameRoutePrefix: false,
+    routeParams: true,
+  });
 
-    // render the error page
-    res.status(err.status || 500);
-    res.render('error');
-});
-
-
-app.addListener('error', (error) => {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case 'EADDRINUSE':
-            console.error(`${port} is already in use`);
-            process.exit(1);
-        default:
-            throw error;
-    }
-});
-
-
-app.listen(port, () => logger.info(`Example app listening at http://localhost:${port}`))
-
-export { app };
+  server.register(Sensible);
+}
