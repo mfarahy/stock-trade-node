@@ -1,9 +1,15 @@
-import Trade from 'src/models/trade';
-import Result, { OperationResult } from 'src/models/result';
+import { injectable } from 'inversify';
 import { connect } from 'mongoose';
+import Result, { OperationResult } from '../../models/result';
+import Trade from '../../models/trade';
 import { TradeModel } from './schema/trade';
 
-export default class TradeRepository {
+export interface ITradeRepository {
+  insert(trade: Trade): Promise<OperationResult>;
+}
+
+@injectable()
+export default class TradeRepository implements ITradeRepository {
   private _db_uri: string;
   private _db_opts: Object;
   constructor(db_uri: string, options: {}) {
@@ -17,6 +23,6 @@ export default class TradeRepository {
     var tradeDoc = new TradeModel(trade);
     tradeDoc.save();
 
-    return Result.OK();
+    return Result.ok();
   };
 }

@@ -21,8 +21,8 @@
     "rootDirs": ["src", "src/test"],
     "outDir": "build",
     "noImplicitAny": false,
-    "baseUrl": "."
+    "types": ["reflect-metadata"]
   },
   "exclude": ["node_modules", "build"],
-  "include": ["src", "src/*.ts", "src/**/*.ts"]
+  "include": ["src/*.ts", "src/**/*.ts"]
 }

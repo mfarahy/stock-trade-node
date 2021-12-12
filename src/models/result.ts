@@ -1,10 +1,12 @@
 export class OperationResult {
-  constructor(success: boolean, message: string) {
+  constructor(success: boolean, message: string, errorCode: string | undefined = undefined) {
     this._success = success;
     this._message = message;
+    this._errorCode = errorCode ?? '';
   }
   private _success: boolean;
   private _message: string;
+  private _errorCode: string;
 
   public get isSuccess() {
     return this._success;
@@ -13,9 +15,13 @@ export class OperationResult {
   public get message() {
     return this._message;
   }
+
+  public get errorCode() {
+    return this._errorCode;
+  }
 }
 
-export class OperationResultValue<T> extends OperationResult {
+export class ValueResult<T> extends OperationResult {
   constructor(value: T, success: boolean, message: string) {
     super(success, message);
     this._value = value;
@@ -28,20 +34,17 @@ export class OperationResultValue<T> extends OperationResult {
 }
 
 const Result = {
-  OK(): OperationResult {
+  ok(): OperationResult {
     return new OperationResult(true, '');
   },
-  Fail(error: string): OperationResult {
-    return new OperationResult(false, error);
+  fail(errorCode: string, message: string): OperationResult {
+    return new OperationResult(false, message, errorCode);
   },
-  Error(error: Error): OperationResult {
-    return new OperationResult(false, error.message);
+  error(errorCode: string, error: Error): OperationResult {
+    return new OperationResult(false, error.message, errorCode);
   },
-  Value<T>(value: T) {
-    return new OperationResultValue(value, true, '');
-  },
-  OperationResultValue<T>(value: T, success: boolean, message: string) {
-    return new OperationResultValue(value, success, message);
+  value<T>(value: T) {
+    return new ValueResult(value, true, '');
   },
 };
 

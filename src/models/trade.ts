@@ -29,7 +29,7 @@ export default class Trade implements ITrade {
   // The timezone is EST(UTC - 4).
   public timestamp: Date;
 
-  constructor(init: Partial<Trade> | undefined) {
+  constructor(init: Partial<Trade> | undefined = undefined) {
     this.id = 0;
     this.type = 'buy';
     this.user = null;
@@ -37,5 +37,7 @@ export default class Trade implements ITrade {
     this.shares = 0;
     this.price = 0.0;
     this.timestamp = new Date();
+
+    if (init) Object.assign(this, init);
   }
 }
