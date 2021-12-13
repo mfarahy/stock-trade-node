@@ -22,8 +22,13 @@ export class OperationResult {
 }
 
 export class ValueResult<T> extends OperationResult {
-  constructor(value: T, success: boolean, message: string) {
-    super(success, message);
+  constructor(
+    value: T,
+    success: boolean,
+    message: string,
+    errorCode: string | undefined = undefined
+  ) {
+    super(success, message, errorCode);
     this._value = value;
   }
   private _value: T;
@@ -33,18 +38,41 @@ export class ValueResult<T> extends OperationResult {
   }
 }
 
+export class QueryResult<T> extends ValueResult<T[]> {
+  constructor(
+    data: T[],
+    elapsedTime: number,
+    success: boolean,
+    message: string,
+    errorCode: string | undefined = undefined
+  ) {
+    super(data, success, message, errorCode);
+    this._elapsedTime = elapsedTime;
+  }
+  private _elapsedTime: number;
+  public get elapsedTime() {
+    return this._elapsedTime;
+  }
+}
+
 const Result = {
   ok(): OperationResult {
     return new OperationResult(true, '');
   },
-  fail(errorCode: string, message: string): OperationResult {
+  error(message: string, errorCode: string | undefined = undefined): OperationResult {
     return new OperationResult(false, message, errorCode);
   },
-  error(errorCode: string, error: Error): OperationResult {
+  exception(error: Error, errorCode: string | undefined = undefined): OperationResult {
     return new OperationResult(false, error.message, errorCode);
   },
-  value<T>(value: T) {
+  value<T>(value: T): ValueResult<T> {
     return new ValueResult(value, true, '');
+  },
+  fail<T>(error: Error, errorCode: string | undefined = undefined): ValueResult<T | undefined> {
+    return new ValueResult<T | undefined>(undefined, false, error.message, errorCode);
+  },
+  query<T>(data: T[], elapsedTime: number) {
+    return new QueryResult(data, elapsedTime, true, '');
   },
 };
 

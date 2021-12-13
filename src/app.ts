@@ -4,7 +4,7 @@ import Cors from 'fastify-cors';
 import Autoload from 'fastify-autoload';
 import Sensible from 'fastify-sensible';
 
-export async function App(server, opts) {
+export async function app(server, opts) {
   server.register(Cors, {
     origin: false,
   });

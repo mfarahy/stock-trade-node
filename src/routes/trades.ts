@@ -1,11 +1,13 @@
 import { FastifyRouteSchemaDef } from 'fastify/types/schema';
 import Joi, { ObjectSchema } from 'joi';
-import { TradeJoiSchema } from '../validations/trade';
+import { TradeJoiSchema, TradeJsonSchema } from '../validations/trade';
 import { Container } from 'inversify';
 import { ITradeController } from './../controllers/tradeController';
-import TYPE_IDENTIFIER from './../constants/typeIdentifier';
+import TYPES from '../constants/types';
 import Trade from '../models/trade';
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
+import S from 'fluent-json-schema';
+import _ from 'lodash';
 
 export default async function trades(server: FastifyInstance, opts: FastifyServerOptions) {
   server.route({
@@ -23,11 +25,31 @@ export default async function trades(server: FastifyInstance, opts: FastifyServe
     },
     handler: async (request, reply) => {
       const container = server['container'] as Container;
-      const tradeController = container.get<ITradeController>(TYPE_IDENTIFIER.ITradeController);
+      const tradeController = container.get<ITradeController>(TYPES.ITradeController);
       const httpResult = await tradeController.add(<Trade>request.body);
-      console.log('trade has been added');
       reply.status(httpResult.statusCode);
-      return {};
+      return '';
+    },
+  });
+
+  server.route({
+    method: 'GET',
+    url: '/trades',
+    schema: {
+      response: {
+        200: {
+          type: 'array',
+          items: { ..._.omit(TradeJsonSchema, ['required', 'additionalProperties']) },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      server.log.info('get trades is called');
+      const container = server['container'] as Container;
+      const tradeController = container.get<ITradeController>(TYPES.ITradeController);
+      const result = await tradeController.getAll(<Trade>request.body);
+      reply.status(result.statusCode);
+      return result.value;
     },
   });
 }

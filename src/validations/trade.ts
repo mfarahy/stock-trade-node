@@ -12,4 +12,4 @@ export const TradeJoiSchema = {
   timestamp: Joi.date(),
 };
 
-export const TradeJsonSchema = parse(Joi.object(TradeJoiSchema));
+export const TradeJsonSchema = parse(Joi.object().keys(TradeJoiSchema));
