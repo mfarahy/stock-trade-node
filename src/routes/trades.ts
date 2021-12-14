@@ -26,7 +26,7 @@ export default async function trades(server: FastifyInstance, opts: FastifyServe
     handler: async (request, reply) => {
       const container = server['container'] as Container;
       const tradeController = container.get<ITradeController>(TYPES.ITradeController);
-      const httpResult = await tradeController.add(<Trade>request.body);
+      const httpResult = await tradeController.add(new Trade(<Partial<Trade>>request.body));
       reply.status(httpResult.statusCode);
       return '';
     },

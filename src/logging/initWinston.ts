@@ -3,8 +3,6 @@ const { format } = require('winston');
 const { combine, timestamp, printf } = format;
 
 const makeWinston = (appname: string) => {
-  console.log('makeWinston was called.');
-
   const consoleFormatter = printf(({ level, message, logger, timestamp }) => {
     return `${timestamp} [${logger}] [${level}]: ${message}`;
   });

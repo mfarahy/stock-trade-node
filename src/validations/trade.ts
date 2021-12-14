@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import parse from 'joi-to-json';
+import _ from 'lodash';
 import { UserJoiSchema } from './user';
 
 export const TradeJoiSchema = {
@@ -7,9 +8,12 @@ export const TradeJoiSchema = {
   type: Joi.string().allow('buy', 'sell').required(),
   user: Joi.object(UserJoiSchema).required(),
   symbol: Joi.string().case('upper').max(5).min(1).required(),
-  shares: Joi.number().max(30).min(10).required(),
+  shares: Joi.number().required(),
   price: Joi.number().greater(0).precision(2).required(),
   timestamp: Joi.date(),
 };
 
-export const TradeJsonSchema = parse(Joi.object().keys(TradeJoiSchema));
+const jsonSchema = parse(Joi.object().keys(TradeJoiSchema));
+jsonSchema['properties']['datetime'] = { type: 'string' };
+
+export const TradeJsonSchema = jsonSchema;

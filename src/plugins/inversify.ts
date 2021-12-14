@@ -38,7 +38,6 @@ async function inversifyPlugin(
       var logger = winston.loggers.get('default');
       return new WinstonLoggerFactory(logger);
     });
-
   server.decorate('container', container);
 
   next();

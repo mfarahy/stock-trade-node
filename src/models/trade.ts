@@ -1,5 +1,5 @@
+import _ from 'lodash';
 import User from './user';
-
 export interface ITrade {
   id: number;
   type: 'buy' | 'sell';
@@ -30,14 +30,12 @@ export default class Trade implements ITrade {
   public timestamp: Date;
 
   constructor(init: Partial<Trade> | undefined = undefined) {
-    this.id = 0;
-    this.type = 'buy';
-    this.user = null;
-    this.symbol = '';
-    this.shares = 0;
-    this.price = 0.0;
-    this.timestamp = new Date();
-
-    if (init) Object.assign(this, init);
+    this.id = init?.id ?? 0;
+    this.type = init?.type ?? 'buy';
+    this.user = init?.user ?? null;
+    this.symbol = init?.symbol ?? '';
+    this.shares = init?.shares ?? 0;
+    this.price = init?.price ?? 0;
+    this.timestamp = init?.timestamp ?? new Date();
   }
 }

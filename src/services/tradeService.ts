@@ -11,7 +11,7 @@ import { ERROR_CODES } from '../constants/const';
 export interface ITradeService {
   add(trade: Trade): Promise<ValueResult<Trade | undefined>>;
   eraseAll(): Promise<OperationResult>;
-  getAll(): Promise<QueryResult<Partial<Trade>>>;
+  getAll(): Promise<QueryResult<Trade>>;
   findById(userId: number): Promise<ValueResult<Trade[]>>;
 }
 
@@ -54,18 +54,27 @@ export default class TradeService implements ITradeService {
       return Result.exception(error);
     }
   };
-  getAll = async (): Promise<QueryResult<Partial<Trade>>> => {
+  getAll = async (): Promise<QueryResult<Trade>> => {
     this.logger.info('getAll method has been called.');
     try {
-      const result = await this.repository.find({}, {}, { id: 1 }, 0, 0);
+      const rResult = await this.repository.find({}, {}, { id: 1 }, 0, 0);
 
-      this.logger.info(
-        `repository found and return ${result.value.length} in ${result.elapsedTime / 1000}ms.`
-      );
+      if (rResult.isSuccess) {
+        const result: Trade[] = [];
+        for (let i = 0; i < rResult.value.length; ++i) {
+          result.push(new Trade(rResult.value[i]));
+        }
 
-      return result;
+        this.logger.info(
+          `repository found and return ${rResult.value.length} in ${rResult.elapsedTime / 1000}ms.`
+        );
+
+        return Result.query(result, rResult.elapsedTime);
+      } else {
+        return Result.failedQuery(rResult.message, rResult.errorCode);
+      }
     } catch (error: any) {
-      return new QueryResult([], 0, false, error.message);
+      return Result.failedQuery(error.message);
     }
   };
   findById = async (userId: number): Promise<ValueResult<Trade[]>> => {

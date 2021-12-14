@@ -74,6 +74,9 @@ const Result = {
   query<T>(data: T[], elapsedTime: number) {
     return new QueryResult(data, elapsedTime, true, '');
   },
+  failedQuery<T>(message: string, errorCode: string | undefined = undefined) {
+    return new QueryResult<T>([], 0, false, message, errorCode);
+  },
 };
 
 export default Result;

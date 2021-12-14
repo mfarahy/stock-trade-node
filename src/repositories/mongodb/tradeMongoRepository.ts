@@ -68,6 +68,15 @@ export default class TradeMongoRepository implements ITradeRepository {
       .skip(skip)
       .limit(limit);
 
+    for (let i = 0; i < result.length; ++i) {
+      result[i].timestamp = this.convertUTCDateToLocalDate(result[i].timestamp);
+    }
+
     return Result.query<Partial<Trade>>(result, Date.now() - start);
   };
+
+  convertUTCDateToLocalDate(date) {
+    var newDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+    return newDate;
+  }
 }

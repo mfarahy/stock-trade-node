@@ -3,7 +3,7 @@ import Trade from '../../../models/trade';
 
 const tradeSchema = new Schema({
   id: { type: Number, unique: true, required: true },
-  type: { type: String, required: true, maxlength: 3, minlength: 3 },
+  type: { type: String, required: true, maxlength: 4, minlength: 3, lowercase: true },
   user: {
     id: {
       type: Number,
