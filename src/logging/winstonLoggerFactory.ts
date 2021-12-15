@@ -1,13 +1,14 @@
 import winston, { Logger } from 'winston';
 import { ILoggerFactory, ILogger } from './interfaces';
 import { WinstonLogger } from './winstonLogger';
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
+import TYPES from '../constants/types';
 
 @injectable()
 export class WinstonLoggerFactory implements ILoggerFactory {
   private logger: Logger;
 
-  constructor(logger: Logger) {
+  constructor(@inject(TYPES.Logger) logger: Logger) {
     this.logger = logger;
   }
 

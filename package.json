@@ -8,7 +8,8 @@
     "debug": "nodemon",
     "pretest": "tsc -p .",
     "start": "node build/index.js",
-    "test": "set NODE_ENV=test & npm run build & jest test"
+    "test": "set NODE_ENV=test & npm run build & jest test",
+    "jest": "set NODE_ENV=test & jest test"
   },
   "dependencies": {
     "@hapi/boom": "^9.1.0",

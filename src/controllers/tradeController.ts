@@ -1,5 +1,5 @@
 import Trade from '../models/trade';
-import Result, { OperationResult, ValueResult } from '../models/result';
+import Result, { ValueResult } from '../models/result';
 import { inject, injectable } from 'inversify';
 import SymbolRange from '../models/symbolRange';
 import { ITradeService } from '../services/tradeService';
@@ -7,15 +7,13 @@ import { HttpResult, HttpResults, HttpValueResult } from '../models/httpResult';
 import TYPES from '../constants/types';
 import StatusCodes from 'http-status-codes';
 import _ from 'lodash';
-import { Model, model, Models } from 'mongoose';
-import { string } from 'joi';
-import { join } from 'path';
+import { ERROR_CODES } from '../constants/const';
 
 export interface ITradeController {
   add(trade: Trade): Promise<HttpResult>;
   eraseAll(): Promise<HttpResult>;
   getAll(trade: Trade): Promise<HttpValueResult<Trade[]>>;
-  findById(userId: number): Promise<ValueResult<Trade[]>>;
+  findByUserId(userId: number): Promise<HttpValueResult<Trade[]>>;
 }
 
 @injectable()
@@ -45,22 +43,31 @@ export default class TradeController implements ITradeController {
     }
   };
 
+  private refineTimestamp = (data: { timestamp: Date }[]) => {
+    for (let i = 0; i < data.length; ++i) {
+      if (data[i].timestamp) {
+        var date = data[i].timestamp.toISOString().split(/[T.]/);
+        Object.assign(data[i], { timestamp: date[0] + ' ' + date[1] });
+      }
+    }
+  };
+
   getAll = async (): Promise<HttpValueResult<Trade[]>> => {
     const result = await this.service.getAll();
     if (result.isSuccess) {
-      for (let i = 0; i < result.value.length; ++i) {
-        if (result.value[i].timestamp) {
-          var date = result.value[i].timestamp.toISOString().split(/[T.]/);
-          Object.assign(result.value[i], { timestamp: date[0] + ' ' + date[1] });
-        }
-      }
-
+      this.refineTimestamp(result.value);
       return HttpResults.ok_value(result.value);
-    } else return new HttpValueResult(StatusCodes.INTERNAL_SERVER_ERROR, []);
+    } else return HttpResults.internal_server_error_value<Trade[]>([]);
   };
 
-  findById = async (userId: number): Promise<ValueResult<Trade[]>> => {
-    return Result.value([]);
+  findByUserId = async (userId: number): Promise<HttpValueResult<Trade[]>> => {
+    const result = await this.service.findByUserId(userId);
+    if (result.isSuccess) {
+      this.refineTimestamp(result.value);
+      return HttpResults.ok_value(result.value);
+    } else if (result.errorCode == ERROR_CODES.USER_NOT_FOUND)
+      return HttpResults.not_found_value<Trade[]>([]);
+    return HttpResults.internal_server_error_value<Trade[]>([]);
   };
 
   getMinMaxPrice = async (

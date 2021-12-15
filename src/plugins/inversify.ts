@@ -1,15 +1,19 @@
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
 import fp from 'fastify-plugin';
-import { Container, interfaces } from 'inversify';
+import { Container, ContainerModule, interfaces } from 'inversify';
 import TradeController, { ITradeController } from './../controllers/tradeController';
 import TYPES from '../constants/types';
 import TradeService, { ITradeService } from '../services/tradeService';
 import TradeMongoRepository from '../repositories/mongodb/tradeMongoRepository';
 import { ILoggerFactory } from '../logging/interfaces';
-import ITradeRepository from '../repositories/tradeRepository';
 import { C } from '../constants/const';
 import { WinstonLoggerFactory } from '../logging/winstonLoggerFactory';
-import winston from 'winston';
+import winston, { Logger } from 'winston';
+import loggerMiddleware from '../middlewares/logger';
+import ITradeRepository from '../repositories/tradeRepository';
+import UserService, { IUserService } from './../services/userService';
+import UserMongoRepository from './../repositories/mongodb/userMongoRepository';
+import IUserRepository from './../repositories/userRepository';
 
 async function inversifyPlugin(
   server: FastifyInstance,
@@ -18,26 +22,33 @@ async function inversifyPlugin(
 ) {
   const container = new Container({ defaultScope: 'Singleton' });
 
-  container.bind<ITradeController>(TYPES.ITradeController).to(TradeController);
-  container.bind<ITradeService>(TYPES.ITradeService).to(TradeService);
+  container.applyMiddleware(loggerMiddleware);
 
-  container
-    .bind<ITradeRepository>(TYPES.ITradeRepository)
-    .toDynamicValue((context: interfaces.Context) => {
-      const cs = server['config'][C.MONGODB_CONNECTION_STRING];
-      return new TradeMongoRepository(
-        cs,
-        {},
-        context.container.get<ILoggerFactory>(TYPES.ILoggerFactory)
-      );
-    });
+  var logger = winston.loggers.get('default');
+  const loggerFactory = new WinstonLoggerFactory(logger);
+  const cs = server['config'][C.MONGODB_CONNECTION_STRING];
 
-  container
-    .bind<ILoggerFactory>(TYPES.ILoggerFactory)
-    .toDynamicValue((context: interfaces.Context) => {
-      var logger = winston.loggers.get('default');
-      return new WinstonLoggerFactory(logger);
-    });
+  let module = new ContainerModule((bind: interfaces.Bind) => {
+    bind<Logger>(TYPES.Logger).toConstantValue(logger);
+    bind<ILoggerFactory>(TYPES.ILoggerFactory).to(WinstonLoggerFactory);
+
+    bind<string>(TYPES.ConnectionString).toConstantValue(cs);
+    bind<{}>(TYPES.ConnectionOptions).toConstantValue({});
+
+    bind<ITradeController>(TYPES.ITradeController).to(TradeController);
+    bind<ITradeService>(TYPES.ITradeService).to(TradeService).whenInjectedInto(TradeController);
+    bind<ITradeRepository>(TYPES.ITradeRepository)
+      .to(TradeMongoRepository)
+      .whenInjectedInto(TradeService);
+
+    bind<IUserService>(TYPES.IUserService).to(UserService).whenInjectedInto(TradeService);
+    bind<IUserRepository>(TYPES.IUserRepository)
+      .to(UserMongoRepository)
+      .whenInjectedInto(UserService);
+  });
+
+  container.load(module);
+
   server.decorate('container', container);
 
   next();

@@ -40,4 +40,13 @@ export const HttpResults = {
   internal_server_error: () => {
     return new HttpResult(StatusCodes.INTERNAL_SERVER_ERROR);
   },
+  not_found: () => {
+    return new HttpResult(StatusCodes.NOT_FOUND);
+  },
+  internal_server_error_value: <T>(value: T) => {
+    return new HttpValueResult<T>(StatusCodes.INTERNAL_SERVER_ERROR, value);
+  },
+  not_found_value: <T>(value: T) => {
+    return new HttpValueResult<T>(StatusCodes.NOT_FOUND, value);
+  },
 };

@@ -11,6 +11,27 @@ import _ from 'lodash';
 
 export default async function trades(server: FastifyInstance, opts: FastifyServerOptions) {
   server.route({
+    method: 'GET',
+    url: '/trades/users/:userId',
+    schema: {
+      response: {
+        200: {
+          type: 'array',
+          items: { ..._.omit(TradeJsonSchema, ['required', 'additionalProperties']) },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const params = <{ userId: number }>request.params;
+      const container = server['container'] as Container;
+      const tradeController = container.get<ITradeController>(TYPES.ITradeController);
+      const result = await tradeController.findByUserId(params.userId);
+      reply.status(result.statusCode);
+      return result.value;
+    },
+  });
+
+  server.route({
     method: 'POST',
     url: '/trades',
     schema: {

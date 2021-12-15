@@ -1,56 +1,23 @@
 import { inject, injectable } from 'inversify';
-import mongoose from 'mongoose';
 import TYPES from '../../constants/types';
 import Trade from '../../models/trade';
-import { ILogger, ILoggerFactory } from '../../logging/interfaces';
-import ITradeRepository from '../tradeRepository';
+import { ILoggerFactory } from '../../logging/interfaces';
 import { TradeModel } from './schema/trade';
-import Result, { ValueResult } from '../../models/result';
-import { ERROR_CODES } from '../../constants/const';
-import { QueryResult } from './../../models/result';
+import MongoRepository from './mongoRepository';
+import ITradeRepository from '../tradeRepository';
 
 @injectable()
-export default class TradeMongoRepository implements ITradeRepository {
-  private db_uri: string;
-  private db_opts: Object;
-  private logger: ILogger;
+export default class TradeMongoRepository
+  extends MongoRepository<Trade>
+  implements ITradeRepository
+{
   constructor(
-    db_uri: string,
-    options: {},
+    @inject(TYPES.ConnectionString) db_uri: string,
+    @inject(TYPES.ConnectionOptions) options: {},
     @inject(TYPES.ILoggerFactory) loggerFactory: ILoggerFactory
   ) {
-    this.db_uri = db_uri;
-    this.db_opts = options;
-    this.logger = loggerFactory.create(TradeMongoRepository.name);
+    super(db_uri, options, TradeModel, loggerFactory);
   }
-
-  private connect = async (): Promise<void> => {
-    await mongoose.connect(this.db_uri, this.db_opts);
-  };
-
-  public eraseAll = async (): Promise<void> => {
-    await this.connect();
-
-    await TradeModel.deleteMany({});
-  };
-
-  public insert = async (trade: Trade): Promise<ValueResult<Trade | undefined>> => {
-    this.logger.debug('the method insert has been called.');
-
-    await this.connect();
-
-    var tradeDoc = new TradeModel(trade);
-    try {
-      const saved_trade = await tradeDoc.save();
-      return Result.value(saved_trade);
-    } catch (error: any) {
-      this.logger.error(error.message ?? 'an exception while occurred while inserting data', error);
-
-      if (error.message.indexOf('duplicate key error collection') >= 0)
-        return Result.fail<Trade>(error, ERROR_CODES.DUPLICATE_ENTRY);
-      else return Result.fail<Trade>(error);
-    }
-  };
 
   public find = async (
     filter: {},
@@ -58,25 +25,18 @@ export default class TradeMongoRepository implements ITradeRepository {
     sortion: {},
     limit: number,
     skip: number
-  ): Promise<QueryResult<Partial<Trade>>> => {
-    const start: number = Date.now();
-    await this.connect();
-
-    const result = await TradeModel.find(filter)
-      .sort(sortion)
-      .select(projection)
-      .skip(skip)
-      .limit(limit);
+  ): Promise<Partial<Trade>[]> => {
+    var result = await super.find(filter, projection, sortion, limit, skip);
 
     for (let i = 0; i < result.length; ++i) {
       result[i].timestamp = this.convertUTCDateToLocalDate(result[i].timestamp);
     }
 
-    return Result.query<Partial<Trade>>(result, Date.now() - start);
+    return result;
   };
 
-  convertUTCDateToLocalDate(date) {
+  private convertUTCDateToLocalDate = (date) => {
     var newDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
     return newDate;
-  }
+  };
 }

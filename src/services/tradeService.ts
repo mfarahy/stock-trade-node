@@ -1,83 +1,67 @@
 import { inject, injectable } from 'inversify';
 import Result, { OperationResult, QueryResult, ValueResult } from '../models/result';
 import Trade from '../models/trade';
-import ITradeRepository from '../repositories/tradeRepository';
-import { ILogger, ILoggerFactory } from '../logging/interfaces';
+import { ILoggerFactory } from '../logging/interfaces';
 import TYPES from './../constants/types';
 import { TradeJoiSchema } from './../validations/trade';
-import Joi from 'joi';
+import ITradeRepository from '../repositories/tradeRepository';
+import ServiceBase, { IServiceBase } from './serviceBase';
+import { IUserService } from './userService';
 import { ERROR_CODES } from '../constants/const';
 
-export interface ITradeService {
-  add(trade: Trade): Promise<ValueResult<Trade | undefined>>;
-  eraseAll(): Promise<OperationResult>;
-  getAll(): Promise<QueryResult<Trade>>;
-  findById(userId: number): Promise<ValueResult<Trade[]>>;
+export interface ITradeService extends IServiceBase<Trade> {
+  findByUserId(userId: number): Promise<QueryResult<Trade>>;
 }
 
 @injectable()
-export default class TradeService implements ITradeService {
-  private repository: ITradeRepository;
-  private logger: ILogger;
+export default class TradeService
+  extends ServiceBase<Trade, ITradeRepository>
+  implements ITradeService
+{
+  private userService: IUserService;
   constructor(
+    @inject(TYPES.IUserService) userService: IUserService,
     @inject(TYPES.ITradeRepository) repository: ITradeRepository,
     @inject(TYPES.ILoggerFactory) loggerFactory: ILoggerFactory
   ) {
-    this.repository = repository;
-    this.logger = loggerFactory.create(TradeService.name);
+    super(repository, TradeJoiSchema, Trade, loggerFactory);
+    this.userService = userService;
   }
 
-  add = async (trade: Trade): Promise<ValueResult<Trade | undefined>> => {
-    this.logger.debug('method add of trader service has been called.');
-
-    const validationResult = Joi.object(TradeJoiSchema).validate(trade);
-    if (validationResult.error) {
-      this.logger.debug('validation failed while inserting for object trade', trade);
-      return Result.fail<Trade>(validationResult.error);
-    }
-
-    try {
-      const saved_result = await this.repository.insert(trade);
-      return saved_result;
-    } catch (error: any) {
-      this.logger.error('an error occurred while inserting trade', error);
-      return Result.fail<Trade>(<Error>error);
-    }
-  };
-
-  // Erasing all the trades
-  eraseAll = async (): Promise<OperationResult> => {
-    try {
-      await this.repository.eraseAll();
-      return Result.ok();
-    } catch (error: any) {
-      return Result.exception(error);
-    }
-  };
-  getAll = async (): Promise<QueryResult<Trade>> => {
-    this.logger.info('getAll method has been called.');
-    try {
-      const rResult = await this.repository.find({}, {}, { id: 1 }, 0, 0);
-
-      if (rResult.isSuccess) {
-        const result: Trade[] = [];
-        for (let i = 0; i < rResult.value.length; ++i) {
-          result.push(new Trade(rResult.value[i]));
-        }
-
-        this.logger.info(
-          `repository found and return ${rResult.value.length} in ${rResult.elapsedTime / 1000}ms.`
-        );
-
-        return Result.query(result, rResult.elapsedTime);
-      } else {
-        return Result.failedQuery(rResult.message, rResult.errorCode);
+  public async add(trade: Trade): Promise<ValueResult<Trade>> {
+    if (trade.user) {
+      this.logger.info('check the user exists or not.');
+      var exists_result = await this.userService.exists({ id: trade.user.id });
+      if (!exists_result.isSuccess) {
+        return new ValueResult(trade, false, exists_result.message, exists_result.errorCode);
       }
-    } catch (error: any) {
-      return Result.failedQuery(error.message);
+      if (!exists_result.value) {
+        this.logger.info('try add new user.');
+        const add_result = await this.userService.add(trade.user);
+        if (!add_result.isSuccess) {
+          return new ValueResult(trade, false, add_result.message, add_result.errorCode);
+        }
+      } else {
+        this.logger.info('user exists.');
+      }
     }
-  };
-  findById = async (userId: number): Promise<ValueResult<Trade[]>> => {
-    throw new Error('Method not implemented.');
-  };
+    return super.add(trade);
+  }
+
+  public async findByUserId(userId: number): Promise<QueryResult<Trade>> {
+    var exists_result = await this.userService.exists({ id: userId });
+    if (!exists_result.isSuccess) {
+      return Result.failedQuery(exists_result.message, exists_result.errorCode);
+    }
+
+    if (!exists_result.value) {
+      return Result.failedQuery('The user does not exist.', ERROR_CODES.USER_NOT_FOUND);
+    }
+
+    try {
+      return await super.find({ 'user.id': { $eq: userId } }, { Id: 1 }, 0, 0);
+    } catch (error: any) {
+      return Result.failedQuery(error.message, ERROR_CODES.UNKNOWN);
+    }
+  }
 }
