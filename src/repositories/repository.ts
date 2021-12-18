@@ -9,7 +9,20 @@ export interface IModelCreator<T> {
 }
 
 export default interface IRepository<T> {
-  insert(entity: T): Promise<T>;
-  eraseAll(): Promise<void>;
-  find(filter: {}, projection: {}, sortion: {}, limit: number, skip: number): Promise<Partial<T>[]>;
+  insert(entity: T, transaction?: any): Promise<T>;
+  update(filter: {}, entity: T, transaction?: any): Promise<T>;
+  upsert(filter: {}, entity: T, transaction?: any): Promise<T>;
+  eraseAll(transaction?: any): Promise<void>;
+  find(
+    filter: {},
+    projection: {},
+    sortion: {},
+    limit: number,
+    skip: number,
+    transaction?: any
+  ): Promise<Partial<T>[]>;
+  beginTransaction(): Promise<any>;
+  commitTransaction(transaction: any): Promise<void>;
+  abortTransaction(transaction: any): Promise<void>;
+  endTransaction(transaction: any): Promise<void>;
 }

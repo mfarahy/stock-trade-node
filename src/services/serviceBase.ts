@@ -9,9 +9,11 @@ import { injectable, unmanaged } from 'inversify';
 export interface IServiceBase<T> {
   add(entity: T): Promise<ValueResult<T>>;
   eraseAll(): Promise<OperationResult>;
-  getAll(): Promise<QueryResult<T>>;
+  getAll(sortion: {}): Promise<QueryResult<T>>;
   validate(entity: T): ValueResult<string[]>;
   exists(filter: {}): Promise<ValueResult<boolean>>;
+  addOrUpdate(filter: {}, entity: T): Promise<ValueResult<T>>;
+  readonly repository: IRepository<T>;
 }
 
 interface IEntityCtor<T> {
@@ -20,19 +22,17 @@ interface IEntityCtor<T> {
 
 @injectable()
 export default abstract class ServiceBase<T, R extends IRepository<T>> implements IServiceBase<T> {
-  protected repository: R;
   protected logger: ILogger;
   private schema: {};
   private entity_ctor: IEntityCtor<T>;
   constructor(
-    repository: R,
-    @unmanaged() schema: {},
+    public readonly repository: R,
+    @unmanaged() joi_schema: {},
     @unmanaged() entity_ctor: IEntityCtor<T>,
     loggerFactory: ILoggerFactory
   ) {
-    this.repository = repository;
     this.logger = loggerFactory.create(this.constructor.name);
-    this.schema = schema;
+    this.schema = joi_schema;
     this.entity_ctor = entity_ctor;
   }
 
@@ -47,11 +47,42 @@ export default abstract class ServiceBase<T, R extends IRepository<T>> implement
     else return Result.value([]);
   }
 
-  public async add(entity: T): Promise<ValueResult<T>> {
+  public async addOrUpdate(filter: {}, entity: T): Promise<ValueResult<T>> {
+    this.logger.debug('method addOrUpdate has been called.', filter);
+
     const validation_result = this.validate(entity);
 
     if (!validation_result.isSuccess) {
-      const message = 'validation failed for object because ' + validation_result.value.join(', ');
+      const message =
+        'validation failed for object because ' + validation_result?.value?.join(', ');
+      this.logger.error(message);
+      return new ValueResult(entity, false, message, ERROR_CODES.VALIDATION);
+    }
+
+    try {
+      const saved_result = await this.repository.upsert(filter, entity);
+      return Result.value(saved_result);
+    } catch (error: any) {
+      if (error && error.constructor.name == DuplicationError.name) {
+        return new ValueResult(
+          entity,
+          false,
+          'there is another item with same key.',
+          ERROR_CODES.DUPLICATE_ENTRY
+        );
+      }
+      return new ValueResult(entity, false, error.message, ERROR_CODES.UNKNOWN);
+    }
+  }
+
+  public async add(entity: T): Promise<ValueResult<T>> {
+    this.logger.debug('method addOrUpdate has been called.', entity);
+
+    const validation_result = this.validate(entity);
+
+    if (!validation_result.isSuccess) {
+      const message =
+        'validation failed for object because ' + validation_result?.value?.join(', ');
       this.logger.error(message);
       return new ValueResult(entity, false, message, ERROR_CODES.VALIDATION);
     }
@@ -82,9 +113,9 @@ export default abstract class ServiceBase<T, R extends IRepository<T>> implement
     }
   }
 
-  public async getAll(): Promise<QueryResult<T>> {
+  public async getAll(sortion: {}): Promise<QueryResult<T>> {
     try {
-      return await this.find({}, { Id: 1 }, 0, 0);
+      return await this.find({}, sortion, 0, 0);
     } catch (error: any) {
       return Result.failedQuery(error.message);
     }
@@ -98,7 +129,13 @@ export default abstract class ServiceBase<T, R extends IRepository<T>> implement
   ): Promise<QueryResult<T>> {
     try {
       const start = Date.now();
-      const rResult = await this.repository.find(filter, {}, sortion, limit, skip);
+      let rResult;
+      try {
+        rResult = await this.repository.find(filter, {}, sortion, limit, skip);
+      } catch (error: any) {
+        this.logger.error(error.message);
+        return Result.failedQuery(error.message);
+      }
 
       const result: T[] = [];
       for (let i = 0; i < rResult.length; ++i) {
@@ -117,8 +154,18 @@ export default abstract class ServiceBase<T, R extends IRepository<T>> implement
   }
 
   public async exists(filter: {}): Promise<ValueResult<boolean>> {
-    const result = await this.repository.find(filter, {}, {}, 0, 0);
-    if (result.length == 0) return Result.value(false);
-    else return Result.value(true);
+    this.logger.debug(`checking item exists or not`, filter);
+
+    try {
+      const check_result = await this.repository.find(filter, { _id: 1 }, {}, 1, 0);
+
+      return Result.value(check_result.length == 1);
+    } catch (error: any) {
+      const message =
+        error.message ?? 'an exception has been occurred while checking item exists or not';
+      this.logger.error(message, error);
+
+      return new ValueResult(false, false, message, ERROR_CODES.UNKNOWN);
+    }
   }
 }

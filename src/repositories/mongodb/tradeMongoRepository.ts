@@ -5,6 +5,7 @@ import { ILoggerFactory } from '../../logging/interfaces';
 import { TradeModel } from './schema/trade';
 import MongoRepository from './mongoRepository';
 import ITradeRepository from '../tradeRepository';
+import SymbolRange from '../../models/symbolRange';
 
 @injectable()
 export default class TradeMongoRepository
@@ -19,24 +20,61 @@ export default class TradeMongoRepository
     super(db_uri, options, TradeModel, loggerFactory);
   }
 
-  public find = async (
+  public async find(
     filter: {},
     projection: {},
     sortion: {},
     limit: number,
-    skip: number
-  ): Promise<Partial<Trade>[]> => {
-    var result = await super.find(filter, projection, sortion, limit, skip);
+    skip: number,
+    transaction?: any
+  ): Promise<Partial<Trade>[]> {
+    this.logger.debug('find has been called', filter);
+
+    var result = await super.find(filter, projection, sortion, limit, skip, transaction);
 
     for (let i = 0; i < result.length; ++i) {
       result[i].timestamp = this.convertUTCDateToLocalDate(result[i].timestamp);
     }
 
     return result;
-  };
+  }
 
-  private convertUTCDateToLocalDate = (date) => {
+  private convertUTCDateToLocalDate(date) {
     var newDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
     return newDate;
-  };
+  }
+
+  public async findRange(
+    symbol: string,
+    start: Date,
+    end: Date,
+    transaction?: any
+  ): Promise<SymbolRange | undefined> {
+    this.logger.debug('findRage has been called', { symbol, start, end });
+
+    await this.connect(transaction);
+
+    const result = await TradeModel.aggregate(
+      [
+        {
+          $match: {
+            symbol: symbol,
+            timestamp: { $gte: start, $lte: end },
+          },
+        },
+        {
+          $group: {
+            _id: {},
+            lowest: { $min: '$price' },
+            highest: { $max: '$price' },
+          },
+        },
+      ],
+      { session: transaction }
+    ).exec();
+    if (result.length == 0) return undefined;
+    const range = new SymbolRange(result[0]);
+    range.symbol = symbol;
+    return range;
+  }
 }

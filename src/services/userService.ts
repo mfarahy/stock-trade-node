@@ -9,7 +9,10 @@ import { UserJoiSchema } from './../validations/user';
 export interface IUserService extends IServiceBase<User> {}
 
 @injectable()
-export default class UserService extends ServiceBase<User, IUserRepository> {
+export default class UserService
+  extends ServiceBase<User, IUserRepository>
+  implements IUserService
+{
   constructor(
     @inject(TYPES.IUserRepository) repository: IUserRepository,
     @inject(TYPES.ILoggerFactory) loggerFactory: ILoggerFactory

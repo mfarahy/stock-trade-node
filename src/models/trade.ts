@@ -7,6 +7,7 @@ export interface ITrade {
   symbol: string;
   shares: number;
   price: number;
+  price_difference: number;
   timestamp: Date;
 }
 
@@ -28,6 +29,10 @@ export default class Trade implements ITrade {
   // The timestamp for the trade creation given in the format yyyy-MM-dd HH:mm:ss .
   // The timezone is EST(UTC - 4).
   public timestamp: Date;
+  // Specifies that based on symbol last price
+  public price_difference: number;
+  // Specifies that based on symbol last price
+  public price_direction: 'N' | 'U' | 'D';
 
   constructor(init: Partial<Trade> | undefined = undefined) {
     this.id = init?.id ?? 0;
@@ -36,6 +41,8 @@ export default class Trade implements ITrade {
     this.symbol = init?.symbol ?? '';
     this.shares = init?.shares ?? 0;
     this.price = init?.price ?? 0;
+    this.price_difference = init?.price_difference ?? 0;
+    this.price_direction = init?.price_direction ?? 'N';
     this.timestamp = init?.timestamp ?? new Date();
   }
 }

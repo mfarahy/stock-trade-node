@@ -2,6 +2,7 @@ export default class SymbolRange {
   public symbol: string;
   public highest?: number;
   public lowest?: number;
+  public count?: number;
   public start?: Date;
   public end?: Date;
 

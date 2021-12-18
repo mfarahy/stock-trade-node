@@ -10,7 +10,10 @@ export const TradeJoiSchema = {
   symbol: Joi.string().case('upper').max(5).min(1).required(),
   shares: Joi.number().required(),
   price: Joi.number().greater(0).precision(2).required(),
+  Number: Joi.number().default(0),
   timestamp: Joi.date(),
+  price_difference: Joi.number(),
+  price_direction: Joi.string().length(1),
 };
 
 const jsonSchema = parse(Joi.object().keys(TradeJoiSchema));

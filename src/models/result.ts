@@ -23,7 +23,7 @@ export class OperationResult {
 
 export class ValueResult<T> extends OperationResult {
   constructor(
-    value: T,
+    value: T | null,
     success: boolean,
     message: string,
     errorCode: string | undefined = undefined
@@ -31,7 +31,7 @@ export class ValueResult<T> extends OperationResult {
     super(success, message, errorCode);
     this._value = value;
   }
-  private _value: T;
+  private _value: T | null;
 
   public get value() {
     return this._value;
@@ -68,14 +68,17 @@ const Result = {
   value<T>(value: T): ValueResult<T> {
     return new ValueResult(value, true, '');
   },
-  fail<T>(error: Error, errorCode: string | undefined = undefined): ValueResult<T | undefined> {
-    return new ValueResult<T | undefined>(undefined, false, error.message, errorCode);
+  fail<T>(error: Error, errorCode: string | undefined = undefined): ValueResult<T> {
+    return new ValueResult<T>(null, false, error.message, errorCode);
   },
   query<T>(data: T[], elapsedTime: number) {
     return new QueryResult(data, elapsedTime, true, '');
   },
   failedQuery<T>(message: string, errorCode: string | undefined = undefined) {
     return new QueryResult<T>([], 0, false, message, errorCode);
+  },
+  error_value<T>(message: string, errorCode: string | undefined = undefined): ValueResult<T> {
+    return new ValueResult<T>(null, false, message, errorCode);
   },
 };
 

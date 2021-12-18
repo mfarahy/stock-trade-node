@@ -43,11 +43,13 @@ export default class TradeController implements ITradeController {
     }
   };
 
-  private refineTimestamp = (data: { timestamp: Date }[]) => {
-    for (let i = 0; i < data.length; ++i) {
-      if (data[i].timestamp) {
-        var date = data[i].timestamp.toISOString().split(/[T.]/);
-        Object.assign(data[i], { timestamp: date[0] + ' ' + date[1] });
+  private refineTimestamp = (data: { timestamp: Date }[] | null) => {
+    if (data != null) {
+      for (let i = 0; i < data.length; ++i) {
+        if (data[i].timestamp) {
+          var date = data[i].timestamp.toISOString().split(/[T.]/);
+          Object.assign(data[i], { timestamp: date[0] + ' ' + date[1] });
+        }
       }
     }
   };

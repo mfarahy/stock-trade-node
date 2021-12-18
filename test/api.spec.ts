@@ -69,11 +69,16 @@ describe('Check Tests', () => {
         switch (eve.request.method) {
           case 'DELETE':
             response = await chai.request(server).delete(eve.request.url);
+            if (response.statusCode != eve.response.status_code) console.log(eve);
+
             expect(response.status).toEqual(eve.response.status_code);
             break;
 
           case 'GET':
             response = await chai.request(server).get(eve.request.url);
+
+            if (response.statusCode != eve.response.status_code) console.log(eve);
+
             expect(response.statusCode).toEqual(eve.response.status_code);
             let ar1 = response.body;
             let ar2 = eve.response.body;

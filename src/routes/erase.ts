@@ -10,7 +10,6 @@ export default async function trades(server: FastifyInstance, opts: FastifyServe
     schema: {
       response: {
         200: {},
-        500: {},
       },
     },
     handler: async (request, reply) => {
