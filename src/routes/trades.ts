@@ -6,7 +6,6 @@ import { ITradeController } from './../controllers/tradeController';
 import TYPES from '../constants/types';
 import Trade from '../models/trade';
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
-import S from 'fluent-json-schema';
 import _ from 'lodash';
 
 export default async function trades(server: FastifyInstance, opts: FastifyServerOptions) {
@@ -65,7 +64,6 @@ export default async function trades(server: FastifyInstance, opts: FastifyServe
       },
     },
     handler: async (request, reply) => {
-      server.log.info('get trades is called');
       const container = server['container'] as Container;
       const tradeController = container.get<ITradeController>(TYPES.ITradeController);
       const result = await tradeController.getAll(<Trade>request.body);
