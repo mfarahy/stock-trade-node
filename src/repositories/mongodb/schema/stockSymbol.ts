@@ -12,8 +12,6 @@ export const StockSymbolSchema = new Schema<StockSymbol>({
     required: true,
   },
   name: { type: String, minlength: 1, maxlength: 100 },
-  lastPrice: { type: Number },
-  lastTrade: { type: Date },
 });
 
 export const StockSymbolModel = model<StockSymbol>('Symbol', StockSymbolSchema);

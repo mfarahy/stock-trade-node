@@ -17,8 +17,6 @@ const tradeSchema = new Schema({
   symbol: { type: String, maxlength: 5, required: true },
   shares: { type: Number, required: true },
   price: { type: Number, required: true },
-  price_difference: { type: Number, default: 0 },
-  price_direction: { type: String, length:1,default:'N' },//'N'|'U'|'D'
   timestamp: { type: Date, default: Date.now, required: true },
 });
 export const TradeModel = model<Trade>('Trade', tradeSchema);

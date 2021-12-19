@@ -12,7 +12,7 @@ export default interface IRepository<T> {
   insert(entity: T, transaction?: any): Promise<T>;
   update(filter: {}, entity: T, transaction?: any): Promise<T>;
   upsert(filter: {}, entity: T, transaction?: any): Promise<T>;
-  eraseAll(transaction?: any): Promise<void>;
+  erase(filter: {}, transaction?: any): Promise<number>;
   find(
     filter: {},
     projection: {},

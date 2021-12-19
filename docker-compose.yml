@@ -1,0 +1,24 @@
+version: "3"
+services:
+
+       stock-trade:
+           container_name: stock-trade
+           image: stock-trade
+           restart: always
+           build: .
+           expose: 
+             - 3000
+           ports:
+             - "3000:3000"
+           links:
+             - mongo
+       mongo:
+             container_name: mongo
+             image: mongo
+             volumes:
+               - ./data:/data/db
+             expose: 
+               - 27017
+             ports:
+               - '27017:27017'
+             command: mongod --bind_ip 0.0.0.0

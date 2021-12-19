@@ -9,7 +9,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "pretty": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "strict": true,
     "target": "ES2018",
     "removeComments": true,

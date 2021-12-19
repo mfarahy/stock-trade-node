@@ -89,6 +89,7 @@ export default abstract class ServiceBase<T, R extends IRepository<T>> implement
 
     try {
       const saved_result = await this.repository.insert(entity);
+      this.logger.info('new item has been inserted.', entity);
       return Result.value(saved_result);
     } catch (error: any) {
       if (error && error.constructor.name == DuplicationError.name) {
@@ -103,10 +104,15 @@ export default abstract class ServiceBase<T, R extends IRepository<T>> implement
     }
   }
 
-  // Erasing all the trades
+  // Erasing all of items
   public async eraseAll(): Promise<OperationResult> {
+    this.logger.debug('method eraseAll has been called.');
+
     try {
-      await this.repository.eraseAll();
+      const deleteCount = await this.repository.erase({});
+
+      this.logger.info(`all of items (${deleteCount}) are deleted.`);
+
       return Result.ok();
     } catch (error: any) {
       return Result.exception(error);

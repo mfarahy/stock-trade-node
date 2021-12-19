@@ -2,6 +2,7 @@ import { Container } from 'inversify';
 import { ITradeController } from '../controllers/tradeController';
 import TYPES from '../constants/types';
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
+import { IEraseController } from './../controllers/eraseController';
 
 export default async function trades(server: FastifyInstance, opts: FastifyServerOptions) {
   server.route({
@@ -15,8 +16,8 @@ export default async function trades(server: FastifyInstance, opts: FastifyServe
     handler: async (request, reply) => {
       server.log.info('new erase request was sent.');
       const container = server['container'] as Container;
-      const tradeController = container.get<ITradeController>(TYPES.ITradeController);
-      const httpResult = await tradeController.eraseAll();
+      const eraseController = container.get<IEraseController>(TYPES.IEraseController);
+      const httpResult = await eraseController.erase();
       reply.status(httpResult.statusCode);
       return {};
     },

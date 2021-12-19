@@ -16,6 +16,6 @@ export default class StockSymbolMongoRepository
     @inject(TYPES.ConnectionOptions) options: {},
     @inject(TYPES.ILoggerFactory) loggerFactory: ILoggerFactory
   ) {
-    super(db_uri, options, StockSymbolModel, loggerFactory);
+    super(db_uri, options, StockSymbolModel, loggerFactory.create(StockSymbolMongoRepository.name));
   }
 }

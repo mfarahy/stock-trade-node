@@ -17,7 +17,7 @@ export default class TradeMongoRepository
     @inject(TYPES.ConnectionOptions) options: {},
     @inject(TYPES.ILoggerFactory) loggerFactory: ILoggerFactory
   ) {
-    super(db_uri, options, TradeModel, loggerFactory);
+    super(db_uri, options, TradeModel, loggerFactory.create(TradeMongoRepository.name));
   }
 
   public async find(
@@ -28,12 +28,12 @@ export default class TradeMongoRepository
     skip: number,
     transaction?: any
   ): Promise<Partial<Trade>[]> {
-    this.logger.debug('find has been called', filter);
-
     var result = await super.find(filter, projection, sortion, limit, skip, transaction);
 
-    for (let i = 0; i < result.length; ++i) {
-      result[i].timestamp = this.convertUTCDateToLocalDate(result[i].timestamp);
+    if (result.length > 0 && result[0].timestamp) {
+      for (let i = 0; i < result.length; ++i) {
+        result[i].timestamp = this.convertUTCDateToLocalDate(result[i].timestamp);
+      }
     }
 
     return result;

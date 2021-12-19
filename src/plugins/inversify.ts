@@ -17,13 +17,14 @@ import StockController, { IStockController } from './../controllers/stockControl
 import StockSymbolService, { IStockSymbolService } from './../services/stockSymbolService';
 import IStockSymbolRepository from './../repositories/stockSymbolRepository';
 import StockSymbolMongoRepository from './../repositories/mongodb/stockSymbolMongoRepository';
+import EraseController, { IEraseController } from './../controllers/eraseController';
 
 async function inversifyPlugin(
   server: FastifyInstance,
   opts: FastifyServerOptions,
   next: (err?: Error) => void
 ) {
-  const container = new Container({ defaultScope: 'Singleton' });
+  const container = new Container({ defaultScope: 'Request' });
 
   const cs = server['config'][C.MONGODB_CONNECTION_STRING];
   var logger = winston.createLogger({
@@ -40,23 +41,17 @@ async function inversifyPlugin(
 
     bind<ITradeController>(TYPES.ITradeController).to(TradeController);
     bind<ITradeService>(TYPES.ITradeService).to(TradeService);
-    bind<ITradeRepository>(TYPES.ITradeRepository)
-      .to(TradeMongoRepository)
-      .whenInjectedInto(TradeService);
+    bind<ITradeRepository>(TYPES.ITradeRepository).to(TradeMongoRepository);
 
-    bind<IUserService>(TYPES.IUserService).to(UserService).whenInjectedInto(TradeService);
-    bind<IUserRepository>(TYPES.IUserRepository)
-      .to(UserMongoRepository)
-      .whenInjectedInto(UserService);
+    bind<IUserService>(TYPES.IUserService).to(UserService);
+    bind<IUserRepository>(TYPES.IUserRepository).to(UserMongoRepository);
 
-    bind<IStockSymbolService>(TYPES.IStockSymbolService)
-      .to(StockSymbolService)
-      .whenInjectedInto(TradeService);
-    bind<IStockSymbolRepository>(TYPES.IStockSymbolRepository)
-      .to(StockSymbolMongoRepository)
-      .whenInjectedInto(StockSymbolService);
+    bind<IStockSymbolService>(TYPES.IStockSymbolService).to(StockSymbolService);
+    bind<IStockSymbolRepository>(TYPES.IStockSymbolRepository).to(StockSymbolMongoRepository);
 
     bind<IStockController>(TYPES.IStockController).to(StockController);
+
+    bind<IEraseController>(TYPES.IEraseController).to(EraseController);
   });
 
   container.load(module);

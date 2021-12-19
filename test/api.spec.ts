@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { app } from '../src/app';
+import { app as server } from '../src/app';
 
 const dir = './test/data/';
 const testFolder = './test/data';
@@ -46,7 +46,6 @@ for (const file of files) {
     }
     table[testCaseNames[i]] = events;
     i++;
-    break;
   }
 }
 
@@ -55,9 +54,8 @@ describe('Check Tests', () => {
   const matrix: any[] = [];
 
   test('a', async () => {
-    const server = 'http://localhost:3003';
-    await app();
-    console.log('server started.');
+    const app = 'http://localhost:3003';
+    await server();
 
     const entries = Object.entries(table);
     for (const [test, requests] of entries) {
@@ -68,17 +66,12 @@ describe('Check Tests', () => {
 
         switch (eve.request.method) {
           case 'DELETE':
-            response = await chai.request(server).delete(eve.request.url);
-            if (response.statusCode != eve.response.status_code) console.log(eve);
-
+            response = await chai.request(app).delete(eve.request.url);
             expect(response.status).toEqual(eve.response.status_code);
             break;
 
           case 'GET':
-            response = await chai.request(server).get(eve.request.url);
-
-            if (response.statusCode != eve.response.status_code) console.log(eve);
-
+            response = await chai.request(app).get(eve.request.url);
             expect(response.statusCode).toEqual(eve.response.status_code);
             let ar1 = response.body;
             let ar2 = eve.response.body;
@@ -95,7 +88,7 @@ describe('Check Tests', () => {
 
           case 'POST':
             response = await chai
-              .request(server)
+              .request(app)
               .post(eve.request.url)
               .set(eve.request.headers)
               .send(eve.request.body);
@@ -105,7 +98,7 @@ describe('Check Tests', () => {
 
           case 'PUT':
             response = await chai
-              .request(server)
+              .request(app)
               .put(eve.request.url)
               .set(eve.request.headers)
               .send(eve.request.body);

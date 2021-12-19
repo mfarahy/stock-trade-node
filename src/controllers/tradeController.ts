@@ -1,17 +1,13 @@
 import Trade from '../models/trade';
-import Result, { ValueResult } from '../models/result';
 import { inject, injectable } from 'inversify';
-import SymbolRange from '../models/symbolRange';
 import { ITradeService } from '../services/tradeService';
 import { HttpResult, HttpResults, HttpValueResult } from '../models/httpResult';
 import TYPES from '../constants/types';
-import StatusCodes from 'http-status-codes';
 import _ from 'lodash';
 import { ERROR_CODES } from '../constants/const';
 
 export interface ITradeController {
   add(trade: Trade): Promise<HttpResult>;
-  eraseAll(): Promise<HttpResult>;
   getAll(trade: Trade): Promise<HttpValueResult<Trade[]>>;
   findByUserId(userId: number): Promise<HttpValueResult<Trade[]>>;
 }
@@ -30,16 +26,6 @@ export default class TradeController implements ITradeController {
       return HttpResults.created();
     } else {
       return HttpResults.bad_request();
-    }
-  };
-
-  // Erasing all the trades
-  eraseAll = async (): Promise<HttpResult> => {
-    var result = await this.service.eraseAll();
-    if (result.isSuccess) {
-      return HttpResults.ok();
-    } else {
-      return HttpResults.internal_server_error();
     }
   };
 
@@ -70,13 +56,5 @@ export default class TradeController implements ITradeController {
     } else if (result.errorCode == ERROR_CODES.USER_NOT_FOUND)
       return HttpResults.not_found_value<Trade[]>([]);
     return HttpResults.internal_server_error_value<Trade[]>([]);
-  };
-
-  getMinMaxPrice = async (
-    symbol: string,
-    start: Date,
-    end: Date
-  ): Promise<ValueResult<SymbolRange>> => {
-    return Result.value(new SymbolRange());
   };
 }

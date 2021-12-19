@@ -10,9 +10,8 @@ import { IUserService } from './userService';
 import { ERROR_CODES } from '../constants/const';
 import SymbolRange from '../models/symbolRange';
 import StockSymbol from './../models/stockSymbol';
-import { FluctuationElement } from '../models/fluctuation';
+import { Fluctuation, FluctuationElement, ZeroFluctuation } from '../models/fluctuation';
 import { IStockSymbolService } from './stockSymbolService';
-import DuplicationError from '../exceptions/duplicationError';
 
 export interface ITradeService extends IServiceBase<Trade> {
   findByUserId(userId: number): Promise<QueryResult<Trade>>;
@@ -34,8 +33,67 @@ export default class TradeService
   ) {
     super(repository, TradeJoiSchema, Trade, loggerFactory);
   }
-  getStats(start: Date, end: Date): Promise<QueryResult<FluctuationElement>> {
-    throw new Error('Method not implemented.');
+
+  public async getStats(start: Date, end: Date): Promise<QueryResult<FluctuationElement>> {
+    const process_start_time = Date.now();
+
+    const symbols_result = await this.symbolService.getAll({ id: 1 });
+    if (!symbols_result.isSuccess)
+      return Result.failedQuery(symbols_result.message, symbols_result.errorCode);
+
+    var data: Partial<Trade>[];
+
+    try {
+      data = await this.repository.find(
+        { timestamp: { $gte: start, $lt: end.setDate(end.getDate() + 1) } },
+        { id: 1, price: 1, symbol: 1 },
+        { id: 1 },
+        0,
+        0
+      );
+    } catch (error: any) {
+      const message =
+        error.message ?? 'an exception has been occurred while getting trades from repository';
+      this.logger.error(message, error);
+      return Result.failedQuery(message, ERROR_CODES.UNKNOWN);
+    }
+    const symbols = symbols_result.value!;
+    const result: FluctuationElement[] = [];
+    for (let i = 0; i < symbols.length; ++i) {
+      const trades = data.filter((x) => x.symbol == symbols[i].id);
+      if (trades.length == 0)
+        result.push(
+          new ZeroFluctuation(symbols[i].id, 'There are no trades in the given date range')
+        );
+      else {
+        var fluctuations = 0;
+        var trend = 'SIDEWAY';
+        var max = 0,
+          min = 0;
+        for (var j = 1; j < trades.length; ++j) {
+          var diff = trades[j].price! - trades[j - 1].price!;
+          if (diff < min) min = diff;
+          if (diff > max) max = diff;
+          if (diff > 0 && trend !== 'UP') {
+            if (trend === 'DOWN') fluctuations++;
+            trend = 'UP';
+          } else if (diff < 0 && trend !== 'DOWN') {
+            if (trend === 'UP') fluctuations++;
+            trend = 'DOWN';
+          }
+        }
+        result.push(
+          new Fluctuation({
+            max_fall: Math.round(Math.abs(min) * 100) / 100,
+            max_rise: Math.round(max * 100) / 100,
+            fluctuations: trades.length < 3 ? 0 : fluctuations,
+            symbol: symbols[i].id,
+          })
+        );
+      }
+    }
+
+    return Result.query(result, Date.now() - process_start_time);
   }
 
   public async getAll(): Promise<QueryResult<Trade>> {
@@ -47,11 +105,6 @@ export default class TradeService
   public async add(trade: Trade): Promise<ValueResult<Trade>> {
     this.logger.debug('add method has been called', trade);
 
-    const symbol_result = await this.symbolService.findByName(trade.symbol);
-
-    if (!symbol_result.isSuccess)
-      return Result.error_value(symbol_result.message, symbol_result.errorCode);
-
     // this process for extracting user and symbol is only for development process
     // because in a real application we provide data for symbols and users in a
     // different way but now we need some data.
@@ -60,66 +113,12 @@ export default class TradeService
       if (!user_result.isSuccess)
         return Result.error_value(user_result.message, user_result.errorCode);
 
-      if (!symbol_result.value) {
-        const insert_symbol_result = await this.extract_symbol(trade);
-        if (!insert_symbol_result.isSuccess)
-          return Result.error_value(insert_symbol_result.message, insert_symbol_result.errorCode);
-      }
+      const insert_symbol_result = await this.extract_symbol(trade);
+      if (!insert_symbol_result.isSuccess)
+        return Result.error_value(insert_symbol_result.message, insert_symbol_result.errorCode);
     }
 
-    if (symbol_result.value) {
-      const symbol = symbol_result.value;
-
-      const validation_result = this.validate(trade);
-
-      if (!validation_result.isSuccess) {
-        const message =
-          'validation failed for object because ' + validation_result?.value?.join(', ');
-        this.logger.error(message);
-        return new ValueResult(trade, false, message, ERROR_CODES.VALIDATION);
-      }
-      const transaction = await this.repository.beginTransaction();
-      try {
-        trade.price_difference = trade.price - symbol_result.value.lastPrice;
-        if (symbol.lastPrice > trade.price) trade.price_direction = 'D';
-        else if (symbol.lastPrice < trade.price) trade.price_direction = 'U';
-        else trade.price_direction = 'N';
-
-        await this.repository.insert(trade, transaction);
-
-        symbol.lastPrice = trade.price;
-        symbol.lastTrade = trade.timestamp;
-
-        await this.symbolService.repository.update(
-          { id: trade.symbol.toUpperCase() },
-          symbol,
-          transaction
-        );
-
-        await this.repository.commitTransaction(transaction);
-        return Result.value(trade);
-      } catch (error: any) {
-        this.logger.error(
-          error.message ?? 'an exception has been occurred while add a trade',
-          error
-        );
-
-        await this.repository.abortTransaction(transaction);
-        if (error && error.constructor.name == DuplicationError.name) {
-          return new ValueResult(
-            trade,
-            false,
-            'there is another item with same key.',
-            ERROR_CODES.DUPLICATE_ENTRY
-          );
-        }
-        return new ValueResult(trade, false, error.message, ERROR_CODES.UNKNOWN);
-      } finally {
-        await this.repository.endTransaction(transaction);
-      }
-    } else {
-      return super.add(trade);
-    }
+    return super.add(trade);
   }
 
   private async extract_user(trade: Trade): Promise<OperationResult> {
@@ -136,8 +135,6 @@ export default class TradeService
     const symbol = new StockSymbol({
       id: trade.symbol.toUpperCase(),
       name: trade.symbol,
-      lastPrice: trade.price,
-      lastTrade: trade.timestamp,
     });
     const upsert_result = await this.symbolService.addOrUpdate({ id: symbol.id }, symbol);
     if (!upsert_result.isSuccess) {

@@ -1,0 +1,64 @@
+
+Architecture
+----------------------------------------------------------
+For implementing this project we used mvc pattern for layering
+
+                     View
+                  -------------
+                    Controller
+                  -------------
+                     Services
+                  -------------
+                   Repositories
+
+
+Because we didn't have any API for declaring users and symbols
+we extract users and symbols from trades while we are adding.
+I know that thi is not a good decision in an operational environment
+so I make it configurable.
+
+Erase will remove all data from all services include symbols, users
+and trades.
+
+Important libs and frameworks
+----------------------------------------------------------
+I applied below frameworks and libs in this application:
+1- fastify for handling REST http requests
+2- winston for logging
+3- joi for validation
+4- mongoose for interacting with mongodb
+5- inversify for dependency injection
+
+
+Test issues
+----------------------------------------------------------
+There are some issue in the test file that I had to change them.
+
+At first, there is a break command which causes other test are not
+able to run. 
+
+>  test issues
+>    table[testCaseNames[i]] = events;
+>      i++;
+>  >> break;
+>    }
+
+Another issue was about using incorrect method delete for testing GET
+request.
+
+>  case 'GET':
+>             response = await chai.request(app).delete(eve.request.url);
+> 
+
+
+How to run
+----------------------------------------------------------
+For runing the tests:
+> npm run test
+
+For runing the application in development mode:
+> npm run debug
+
+For running the application in docker mode:
+> docker-compose up --build
+

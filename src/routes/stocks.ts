@@ -3,7 +3,7 @@ import { ITradeController } from '../controllers/tradeController';
 import TYPES from '../constants/types';
 import { FastifyInstance, FastifyServerOptions } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import { IStockController } from './../controllers/stockController';
+import { IStockController } from '../controllers/stockController';
 
 export default async function stock(server: FastifyInstance, opts: FastifyServerOptions) {
   server.route({
@@ -47,7 +47,7 @@ export default async function stock(server: FastifyInstance, opts: FastifyServer
 
   server.route({
     method: 'GET',
-    url: '/stocks/stats?*',
+    url: '/stocks/stats',
     schema: {
       querystring: {
         type: 'object',
@@ -59,9 +59,16 @@ export default async function stock(server: FastifyInstance, opts: FastifyServer
       },
       response: {
         200: {
-          type: 'object',
-          properties: {
-            symbol: { type: 'string' },
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              symbol: { type: 'string' },
+              fluctuations: { type: 'number' },
+              max_rise: { type: 'number' },
+              max_fall: { type: 'number' },
+              message: { type: 'string' },
+            },
           },
         },
         404: {},

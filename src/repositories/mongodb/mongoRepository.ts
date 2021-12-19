@@ -6,16 +6,13 @@ import { injectable, unmanaged } from 'inversify';
 
 @injectable()
 export default abstract class MongoRepository<T> implements IRepository<T> {
-  protected logger: ILogger;
-
   constructor(
     private readonly db_uri: string,
     private readonly db_opts: {},
     @unmanaged() private readonly model: Model<T> & IModelCreator<T>,
-    loggerFactory: ILoggerFactory
+    protected readonly logger: ILogger
   ) {
     this.model = model;
-    this.logger = loggerFactory.create(MongoRepository.name);
   }
 
   private async findOneAndUpdate(filter: {}, entity: T, upsert: boolean, transaction?: any) {
@@ -70,10 +67,15 @@ export default abstract class MongoRepository<T> implements IRepository<T> {
     if (!transaction) await mongoose.connect(this.db_uri, this.db_opts);
   }
 
-  public async eraseAll(transaction: any): Promise<void> {
+  public async erase(filter: {}, transaction: any): Promise<number> {
+    this.logger.debug('the method erase has been called.', filter);
     await this.connect(transaction);
 
-    await this.model.deleteMany({}, { session: transaction });
+    const deleteCount = await (
+      await this.model.deleteMany(filter, { session: transaction ?? undefined })
+    ).deletedCount;
+
+    return deleteCount;
   }
 
   public async insert(entity: T, transaction: any): Promise<T> {
@@ -100,6 +102,8 @@ export default abstract class MongoRepository<T> implements IRepository<T> {
     skip: number,
     transaction: any
   ): Promise<Partial<T>[]> {
+    this.logger.debug('the method find has been called.', filter);
+
     await this.connect(transaction);
 
     const result = await this.model

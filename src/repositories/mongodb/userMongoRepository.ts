@@ -13,6 +13,6 @@ export default class UserMongoRepository extends MongoRepository<User> implement
     @inject(TYPES.ConnectionOptions) options: {},
     @inject(TYPES.ILoggerFactory) loggerFactory: ILoggerFactory
   ) {
-    super(db_uri, options, UserModel, loggerFactory);
+    super(db_uri, options, UserModel, loggerFactory.create(UserMongoRepository.name));
   }
 }

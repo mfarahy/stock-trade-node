@@ -1,14 +1,12 @@
 import { inject, injectable } from 'inversify';
 import { ILogger, ILoggerFactory } from '../logging/interfaces';
 import { FluctuationElement } from '../models/fluctuation';
-import Result, { ValueResult } from '../models/result';
 import SymbolRange from '../models/symbolRange';
 import { ITradeService } from './../services/tradeService';
 import { HttpResults, HttpValueResult } from './../models/httpResult';
 import TYPES from '../constants/types';
 import { ERROR_CODES } from '../constants/const';
 import Message from '../models/message';
-import { QueryResult } from './../models/result';
 
 export interface IStockController {
   getStats(start: string, end: string): Promise<HttpValueResult<FluctuationElement[]>>;

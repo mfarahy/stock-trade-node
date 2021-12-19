@@ -1,0 +1,9 @@
+/node_modules
+/test
+/build
+/data
+/.idea
+/json-examples
+package-lock.json
+logfile.log
+unit.xml

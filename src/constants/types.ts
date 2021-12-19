@@ -1,4 +1,5 @@
 const TYPES = {
+  IEraseController: Symbol('IEraseController'),
   IStockController: Symbol('IStockController'),
   ITradeController: Symbol('ITradeController'),
   ITradeService: Symbol('ITradeService'),
