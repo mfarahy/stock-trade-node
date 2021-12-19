@@ -1,7 +1,7 @@
 
 Architecture
 ----------------------------------------------------------
-For implementing this project we used mvc pattern for layering
+For implementing this project we used the MVC pattern for layering
 
                      View
                   -------------
@@ -13,41 +13,41 @@ For implementing this project we used mvc pattern for layering
 
 
 Because we didn't have any API for declaring users and symbols
-we extract users and symbols from trades while we are adding.
-I know that thi is not a good decision in an operational environment
-so I make it configurable.
+I extracted users and symbols from trades while they are adding.
+I know that this is not a good decision in an operational environment
+so I made it configurable.
 
 Erase will remove all data from all services include symbols, users
 and trades.
 
-And about computing fluctuations, I know that it's not a optimum way
-to load all of trades records for all of symbols in any date range. 
+And about computing fluctuations, I know that it's not an optimum way
+to load all of the trade records for all of the symbols in any date range. 
 I had two solutions for that:
-1- Insert time compution
-2- Query time compution
-First solution backs to compute trend and fluctuations at insert time 
-but we need consequenced trades in other words trade must add in 
-chronological order but here we didnt have. 
+1- Insert time computation
+2- Query time computation
+The first solution backs to compute trend and fluctuations at insert time 
+but we need consequenced trades in other words trade must be added in a
+chronological order but here we didn't have. 
 So I had to opt query time solution and I had to fetch all related
 records and then compute fluctuations. 
-In a real application I know that we can make some fact data by
+In a real application, I know that we can make some fact data by
 database job and nightly services. 
 
 Important libs and frameworks
 ----------------------------------------------------------
 I applied below frameworks and libs in this application:
-1- fastify for handling REST http requests
-2- winston for logging
-3- joi for validation
-4- mongoose for interacting with mongodb
-5- inversify for dependency injection
+1- fastify for handling REST HTTP requests
+2- Winston for logging
+3- joi job for the validation
+4- mongoose for interacting with MongoDB
+5- university for dependency injection
 
 
 Test issues
 ----------------------------------------------------------
-There are some issue in the test file that I had to change them.
+There are some issues in the test file that I had to change.
 
-At first, there is a break command which causes other test are not
+At first, there is a break command which causes another test is not
 able to run. 
 
 >  test issues
@@ -60,25 +60,25 @@ Another issue was about using incorrect method delete for testing GET
 request.
 
 >  case 'GET':
->             response = await chai.request(app).delete(eve.request.url);
+>             response = await chai. request(app).delete(eve.request.URL);
 > 
 
 Things to complete
 ----------------------------------------------------------
-Due to lack of time, there several things that could be implement later:
-1- Authentication and Atuhorixation
-2- Cross-cuting concerns such as Cache, Log, Security
+Due to lack of time, several things could be implemented later:
+1- Authentication and Authorization
+2- Cross-cutting concerns such as Cache, Log, Security
 3- Put more logs
 4- More test units
 
 How to run
 ----------------------------------------------------------
-For runing the tests:
+For running the tests:
 > npm run test
 
-For runing the application in development mode:
+For running the application in development mode:
 > npm run debug
 
 For running the application in docker mode:
-> docker-compose up --build
+> docker-compose up --build 
 
