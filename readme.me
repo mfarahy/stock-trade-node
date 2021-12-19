@@ -20,6 +20,19 @@ so I make it configurable.
 Erase will remove all data from all services include symbols, users
 and trades.
 
+And about computing fluctuations, I know that it's not a optimum way
+to load all of trades records for all of symbols in any date range. 
+I had two solutions for that:
+1- Insert time compution
+2- Query time compution
+First solution backs to compute trend and fluctuations at insert time 
+but we need consequenced trades in other words trade must add in 
+chronological order but here we didnt have. 
+So I had to opt query time solution and I had to fetch all related
+records and then compute fluctuations. 
+In a real application I know that we can make some fact data by
+database job and nightly services. 
+
 Important libs and frameworks
 ----------------------------------------------------------
 I applied below frameworks and libs in this application:
